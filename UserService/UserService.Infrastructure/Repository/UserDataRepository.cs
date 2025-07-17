@@ -1,10 +1,9 @@
-﻿using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using UserService.Core.Dto;
 using UserService.Core.Interface;
 using UserService.Database;
 using UserService.Database.BusinessEntity;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using System.Linq.Dynamic.Core;
 
 namespace UserService.Infrastructure.Repository
 {
@@ -24,7 +23,7 @@ namespace UserService.Infrastructure.Repository
 
         public async Task UpdateUser(UserData user)
         {
-            var userToBeUpdate = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id.Equals(user.Id)) ?? throw new Exception("Record not found.");
+            var userToBeUpdate = await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id.Equals(user.Id)) ?? throw new Exception("Record not found.");
             _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
         }
@@ -52,13 +51,16 @@ namespace UserService.Infrastructure.Repository
                 queryable = queryable.Where(u => !string.IsNullOrWhiteSpace(u.ZipCode) && u.ZipCode.Contains(request.ZipCode));
 
             // Apply sorting if any
-            var isDescending = request.SortOrder?.ToLower() == "desc";
+            if (!string.IsNullOrWhiteSpace(request.SortColumn) && !string.IsNullOrWhiteSpace(request.SortOrder))
+            {
+                queryable = queryable.OrderBy($"{request.SortColumn} {request.SortOrder}");
+            }
 
             // Get total count
             int totalCount = queryable.Count();
 
             // Apply pagination
-            queryable = queryable.Skip((request.PageCount - 1) * request.PageSize).Take(request.PageCount);
+            queryable = queryable.Skip((request.PageCount - 1) * request.PageSize).Take(request.PageSize);
 
             return (await queryable.ToListAsync(), totalCount);
         }

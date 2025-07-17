@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using UserService.Core.Dto;
 using UserService.Core.Interface;
 
@@ -19,25 +20,25 @@ namespace UserService.Presentation.Controllers
         {
             return await CommonControllerFlow(async() => { 
                 await _userService.CreateUser(request);
-                return "User has been created successfully.";
+                return JsonConvert.SerializeObject("User has been created successfully.");
             });
         }
 
-        [HttpPut]
+        [HttpPost]
         public async Task<IActionResult> UpdateUser(UpdateUserRequestDto request)
         {
             return await CommonControllerFlow(async () => {
                 await _userService.UpdateUser(request);
-                return "User has been updated successfully.";
+                return JsonConvert.SerializeObject("User has been updated successfully.");
             });
         }
 
         [HttpDelete]
-        public async Task<IActionResult> DeleteUser(long id)
+        public async Task<IActionResult> DeleteUser([FromQuery] long id)
         {
             return await CommonControllerFlow(async () => {
                 await _userService.DeleteUser(id);
-                return "User has been deleted successfully.";
+                return JsonConvert.SerializeObject("User has been deleted successfully.");
             });
         }
 

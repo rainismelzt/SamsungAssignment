@@ -3,13 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34309.116
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService.Presentation", "UserService.Presentation\UserService.Presentation.csproj", "{4EE7721E-F6CE-459C-BF6D-6AA1471A7091}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserService.Presentation", "UserService.Presentation\UserService.Presentation.csproj", "{4EE7721E-F6CE-459C-BF6D-6AA1471A7091}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService.Infrastructure", "UserService.Infrastructure\UserService.Infrastructure.csproj", "{92319A9B-9D07-4128-B84C-7D2CD3A0CC91}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserService.Infrastructure", "UserService.Infrastructure\UserService.Infrastructure.csproj", "{92319A9B-9D07-4128-B84C-7D2CD3A0CC91}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService.Core", "UserService.Core\UserService.Core.csproj", "{BF87B39F-BDCE-4890-B317-7088E4BCB033}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserService.Core", "UserService.Core\UserService.Core.csproj", "{BF87B39F-BDCE-4890-B317-7088E4BCB033}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService.Database", "UserService.Database\UserService.Database.csproj", "{ABCC7E97-021F-4784-8E29-2DA550BD2AD5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserService.Database", "UserService.Database\UserService.Database.csproj", "{ABCC7E97-021F-4784-8E29-2DA550BD2AD5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonLibrary", "CommonLibrary\CommonLibrary.csproj", "{0CBAA81F-1E79-448E-B9CF-4C6EDDA889FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{ABCC7E97-021F-4784-8E29-2DA550BD2AD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ABCC7E97-021F-4784-8E29-2DA550BD2AD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ABCC7E97-021F-4784-8E29-2DA550BD2AD5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CBAA81F-1E79-448E-B9CF-4C6EDDA889FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CBAA81F-1E79-448E-B9CF-4C6EDDA889FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CBAA81F-1E79-448E-B9CF-4C6EDDA889FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CBAA81F-1E79-448E-B9CF-4C6EDDA889FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
