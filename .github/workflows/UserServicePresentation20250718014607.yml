@@ -12,7 +12,7 @@ env:
   AZURE_APIM_API_ID: UserServicePresentation
   AZURE_APIM_APPSERVICEURL: https://userservicepresentation20250718014607-bteyguc4b5djgdav.canadacentral-01.azurewebsites.net
   SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION: 6.5.0
-  SWASHBUCKLE_DOTNET_CORE_VERSION: 3.1.x
+  SWASHBUCKLE_DOTNET_CORE_VERSION: 7.0.x
   API_IMPORT_SPECIFICATION_PATH: UserService.Presentation/publish/swagger.json
   API_IMPORT_DLL: UserService/UserService.Presentation/bin/Release/net8.0/UserService.Presentation.dll
   API_IMPORT_VERSION: v1
