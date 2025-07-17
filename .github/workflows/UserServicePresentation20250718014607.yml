@@ -5,7 +5,7 @@ on:
     - ZhengTao/Backend
 env:
   AZURE_WEBAPP_NAME: UserServicePresentation20250718014607
-  AZURE_WEBAPP_PACKAGE_PATH: UserService/UserService.Presentation/publish
+  AZURE_WEBAPP_PACKAGE_PATH: UserService.Presentation/publish
   AZURE_APIM_RESOURCE_PATH: /
   AZURE_APIM_RESOURCEGROUP: testresource
   AZURE_APIM_SERVICENAME: UserServicePresentationapi
@@ -18,7 +18,7 @@ env:
   API_IMPORT_VERSION: v1
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 8.0.x
-  WORKING_DIRECTORY: UserService.Presentation
+  WORKING_DIRECTORY: UserService/UserService.Presentation
 jobs:
   build:
     runs-on: ubuntu-latest
