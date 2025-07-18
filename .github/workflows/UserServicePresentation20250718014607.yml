@@ -121,6 +121,13 @@ jobs:
           az webapp stop --name "${{ env.AZURE_WEBAPP_NAME }}" --resource-group "${{ env.AZURE_APIM_RESOURCEGROUP }}"
         continue-on-error: true
 
+      - name: Set Azure App Service Environment
+        uses: azure/CLI@v1
+        with:
+            azcliversion: 2.30.0
+            inlineScript: |
+                az webapp config appsettings set --name UserServicePresentation20250718014607 --resource-group testresource --settings "ASPNETCORE_ENVIRONMENT=Production"
+
       - name: Deploy using Azure CLI (alternative method)
         run: |
           az webapp deployment source config-zip \
