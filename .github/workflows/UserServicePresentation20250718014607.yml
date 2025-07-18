@@ -57,6 +57,8 @@ jobs:
         run: |
           dotnet publish ${{ env.WORKING_DIRECTORY }} --configuration ${{ env.CONFIGURATION }} --no-build --output ./temp-publish
           echo "Published to temporary location"
+        env:
+            ASPNETCORE_ENVIRONMENT: Production  
 
       - name: Copy files to deployment package (avoiding conflicts)
         run: |
