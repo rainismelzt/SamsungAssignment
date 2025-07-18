@@ -9,18 +9,18 @@ using UserService.Presentation.Middleware;
 
 public class Startup
 {
-    public IConfiguration Configuration { get; }
+    private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _environment;
 
-    public Startup(IConfiguration configuration)
+    public Startup(IConfiguration configuration, IWebHostEnvironment environment)
     {
-        Configuration = configuration;
+        _configuration = configuration;
+        _environment = environment;
     }
 
-    // Register services
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddConfiguredDbContext<UserDbContext>(Configuration);
-
+        services.AddConfiguredDbContext<UserDbContext>(_configuration);
         services.AddScoped<IUserDataRepository, UserDataRepository>();
         services.AddScoped<IUserDataService, UserDataService>();
 
@@ -30,7 +30,7 @@ public class Startup
         });
 
         services.AddControllers();
-        services.AddAngularCorsPolicy(Configuration);
+        services.AddAngularCorsPolicy(_configuration);
 
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c =>
@@ -39,7 +39,6 @@ public class Startup
         });
     }
 
-    // Configure middleware pipeline
     public void Configure(WebApplication app, IWebHostEnvironment env)
     {
         if (env.IsDevelopment())

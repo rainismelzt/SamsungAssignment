@@ -1,9 +1,16 @@
-var builder = WebApplication.CreateBuilder(args);
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
 
-// Add services and configuration from Startup
-var startup = new Startup(builder.Configuration);
-startup.ConfigureServices(builder.Services);
+        var startup = new Startup(builder.Configuration, builder.Environment);
+        startup.ConfigureServices(builder.Services);
 
-var app = builder.Build();
+        var app = builder.Build();
 
-app.Run();
+        startup.Configure(app, builder.Environment);
+
+        app.Run();
+    }
+}
