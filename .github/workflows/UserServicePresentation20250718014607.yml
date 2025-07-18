@@ -16,7 +16,7 @@ env:
   SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION: 6.5.0
   SWASHBUCKLE_DOTNET_CORE_VERSION: 7.0.x
   API_IMPORT_SPECIFICATION_PATH: ./deploy-package/swagger.json
-  API_IMPORT_DLL: UserService/UserService.Presentation/bin/Release/net8.0/UserService.Presentation.dll
+  API_IMPORT_DLL: ./deploy-package/UserService.Presentation.dll
   API_IMPORT_VERSION: v1
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 8.0.x
@@ -53,20 +53,12 @@ jobs:
           mkdir -p ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
           echo "Created deployment directory"
 
-      - name: Publish to temporary location
+      - name: Publish application
         run: |
-          dotnet publish ${{ env.WORKING_DIRECTORY }} --configuration ${{ env.CONFIGURATION }} --no-build --output ./temp-publish
-          echo "Published to temporary location"
+          dotnet publish ${{ env.WORKING_DIRECTORY }} --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+          echo "Published to deployment package"
         env:
-            ASPNETCORE_ENVIRONMENT: Production  
-
-      - name: Copy files to deployment package (avoiding conflicts)
-        run: |
-          # Copy all files from temp-publish to deployment package, excluding problematic directories
-          rsync -av --exclude='UserService.Presentation' ./temp-publish/ ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/
-          echo "Files copied to deployment package"
-          echo "Deployment package contents:"
-          ls -la ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+          ASPNETCORE_ENVIRONMENT: Production
 
       - name: Install Swashbuckle CLI .NET Global Tool
         run: dotnet tool install --global Swashbuckle.AspNetCore.Cli --version ${{ env.SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION }}
@@ -79,6 +71,11 @@ jobs:
             "${{ env.API_IMPORT_VERSION }}"
         env:
           ASPNETCORE_ENVIRONMENT: swagger
+
+      - name: Verify deployment package
+        run: |
+          echo "Deployment package contents:"
+          ls -la ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
       - name: Upload publish artifacts
         uses: actions/upload-artifact@v4
@@ -102,48 +99,42 @@ jobs:
         run: |
           echo "Deployment package contents:"
           ls -la webapp/
-          echo "Checking for problematic files:"
-          find webapp/ -name "*UserService.Presentation*" -o -name "UserService.Presentation" || echo "No problematic files found"
-
-      - name: Zip artifact contents
-        run: |
-          cd webapp
-          zip -r ../webapp.zip .
-        shell: bash
+          echo "Checking for essential files:"
+          ls -la webapp/*.dll || echo "No DLL files found"
+          ls -la webapp/*.json || echo "No JSON files found"
 
       - name: Azure Login
         uses: azure/login@v2
         with:
           creds: ${{ secrets.UserServicePresentationapi_SPN }}
 
-      - name: Stop Azure WebApp
-        run: |
-          az webapp stop --name "${{ env.AZURE_WEBAPP_NAME }}" --resource-group "${{ env.AZURE_APIM_RESOURCEGROUP }}"
-        continue-on-error: true
-
       - name: Set Azure App Service Environment
-        uses: azure/CLI@v1
-        with:
-            azcliversion: 2.30.0
-            inlineScript: |
-                az webapp config appsettings set --name UserServicePresentation20250718014607 --resource-group testresource --settings "ASPNETCORE_ENVIRONMENT=Production"
-
-      - name: Deploy using Azure CLI (alternative method)
         run: |
-          az webapp deployment source config-zip \
+          az webapp config appsettings set \
+            --name "${{ env.AZURE_WEBAPP_NAME }}" \
+            --resource-group "${{ env.AZURE_APIM_RESOURCEGROUP }}" \
+            --settings "ASPNETCORE_ENVIRONMENT=Production"
+
+      - name: Deploy to Azure Web App using az webapp deploy
+        run: |
+          cd webapp
+          zip -r ../webapp.zip .
+          cd ..
+          az webapp deploy \
             --resource-group "${{ env.AZURE_APIM_RESOURCEGROUP }}" \
             --name "${{ env.AZURE_WEBAPP_NAME }}" \
-            --src webapp.zip
-        continue-on-error: false
-
-      - name: Start Azure WebApp
-        run: |
-          az webapp start --name "${{ env.AZURE_WEBAPP_NAME }}" --resource-group "${{ env.AZURE_APIM_RESOURCEGROUP }}"
+            --src-path webapp.zip \
+            --type zip
 
       - name: Wait for deployment to complete
         run: |
           echo "Waiting for deployment to stabilize..."
           sleep 30
+
+      - name: Test deployment
+        run: |
+          echo "Testing if app is running..."
+          curl -f "${{ env.AZURE_APIM_APPSERVICEURL }}/health" || echo "Health check failed or endpoint not available"
 
       - name: Import API into Azure API Management
         run: |
@@ -153,7 +144,7 @@ jobs:
             --service-name "${{ env.AZURE_APIM_SERVICENAME }}" \
             --api-id "${{ env.AZURE_APIM_API_ID }}" \
             --service-url "${{ env.AZURE_APIM_APPSERVICEURL }}" \
-            --specification-path "${{ env.API_IMPORT_SPECIFICATION_PATH }}" \
+            --specification-path "swagger.json" \
             --specification-format OpenApi \
             --subscription-required false
 
