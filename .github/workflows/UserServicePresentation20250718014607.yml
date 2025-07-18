@@ -47,7 +47,6 @@ jobs:
       run: >
         swagger tofile 
         --output "${{ env.API_IMPORT_SPECIFICATION_PATH }}" 
-        --no-startup 
         "${{ env.API_IMPORT_DLL }}" 
         "${{ env.API_IMPORT_VERSION }}"
       env:
