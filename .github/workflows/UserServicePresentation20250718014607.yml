@@ -117,11 +117,14 @@ jobs:
 
       - name: Deploy to Azure Web App
         run: |
-          az webapp deployment source config-zip \
+          cd webapp
+          zip -r ../webapp.zip .
+          cd ..
+          az webapp deploy \
             --resource-group "${{ env.AZURE_APIM_RESOURCEGROUP }}" \
             --name "${{ env.AZURE_WEBAPP_NAME }}" \
-            --src webapp \
-            --build-remote false
+            --src-path webapp.zip \
+            --type zip
 
       - name: Wait for deployment to complete
         run: |
