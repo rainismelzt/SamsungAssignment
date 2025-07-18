@@ -1,9 +1,10 @@
+using CommonLibrary.DependencyProvider;
+using Microsoft.OpenApi.Models;
 using UserService.Core.EntityMapper;
 using UserService.Core.Interface;
 using UserService.Database;
 using UserService.Infrastructure.Repository;
 using UserService.Infrastructure.Service;
-using CommonLibrary.DependencyProvider;
 using UserService.Presentation.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,7 +21,10 @@ builder.Services.AddControllers();
 builder.Services.AddAngularCorsPolicy(builder.Configuration);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Your API", Version = "v1" });
+});
 
 var app = builder.Build();
 
@@ -28,7 +32,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API V1");
+    });
 }
 
 app.UseCors("AngularCors");
