@@ -68,7 +68,9 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: webapp
-        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        path: |
+          ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+          ${{ env.API_IMPORT_SPECIFICATION_PATH }}
     - name: Azure Login
       uses: azure/login@v2
       with:
