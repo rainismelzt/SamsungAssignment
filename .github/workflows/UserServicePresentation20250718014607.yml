@@ -1,4 +1,4 @@
-name: Build and deploy .NET Core app to Web App & API Management
+name: Build and deploy .NET Core application to Web App UserServicePresentation20250718014607 with API Management Service UserServicePresentationapi-UserServicePresentation
 
 on:
   push:
@@ -15,7 +15,7 @@ env:
   AZURE_APIM_APPSERVICEURL: https://userservicepresentation20250718014607-bteyguc4b5djgdav.canadacentral-01.azurewebsites.net
   SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION: 6.5.0
   SWASHBUCKLE_DOTNET_CORE_VERSION: 7.0.x
-  API_IMPORT_SPECIFICATION_PATH: swagger.json
+  API_IMPORT_SPECIFICATION_PATH: UserService/UserService.Presentation/publish/swagger.json
   API_IMPORT_DLL: UserService/UserService.Presentation/bin/Release/net8.0/UserService.Presentation.dll
   API_IMPORT_VERSION: v1
   CONFIGURATION: Release
@@ -26,14 +26,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Setup .NET SDK
+      - name: Setup .NET 8 SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
 
-      - name: Restore dependencies
+      - name: Setup .NET 7 runtime (for swagger CLI tool)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.SWASHBUCKLE_DOTNET_CORE_VERSION }}
+
+      - name: Restore
         run: dotnet restore ${{ env.WORKING_DIRECTORY }}
 
       - name: Build
@@ -45,50 +51,44 @@ jobs:
       - name: Publish
         run: dotnet publish ${{ env.WORKING_DIRECTORY }} --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
-      - name: Install Swashbuckle CLI
+      - name: Install Swashbuckle CLI .NET Global Tool
         run: dotnet tool install --global Swashbuckle.AspNetCore.Cli --version ${{ env.SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION }}
 
-      - name: Generate Swagger
-        run: >
-          swagger tofile
-          --output "${{ env.API_IMPORT_SPECIFICATION_PATH }}"
-          "${{ env.API_IMPORT_DLL }}"
-          "${{ env.API_IMPORT_VERSION }}"
+      - name: Generate OpenAPI Specification Document
+        run: |
+          swagger tofile \
+            --output "${{ env.API_IMPORT_SPECIFICATION_PATH }}" \
+            "${{ env.API_IMPORT_DLL }}" \
+            "${{ env.API_IMPORT_VERSION }}"
         env:
           ASPNETCORE_ENVIRONMENT: swagger
 
-      - name: Create deployment zip
-        run: |
-          cd ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-          zip -r ../../../../webapp.zip ./*
-
-      - name: Upload zip artifact
+      - name: Upload publish artifacts
         uses: actions/upload-artifact@v4
         with:
           name: webapp
-          path: webapp.zip
+          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Download zip artifact
+      - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: webapp
-          path: .
+          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
       - name: Azure Login
         uses: azure/login@v2
         with:
           creds: ${{ secrets.UserServicePresentationapi_SPN }}
 
-      - name: Deploy to Azure Web App
+      - name: Deploy to Azure WebApp
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          package: webapp.zip
-          clean: true
+          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
       - name: Import API into Azure API Management
         run: |
@@ -102,5 +102,5 @@ jobs:
             --specification-format OpenApi \
             --subscription-required false
 
-      - name: Logout of Azure
+      - name: Logout from Azure
         run: az logout
