@@ -49,7 +49,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Only run the app if not being called by the Swashbuckle CLI
-if (args.Length == 0 || args[0] != "swagger")
+if (!app.Environment.IsEnvironment("swagger"))
 {
     app.Run();
 }
