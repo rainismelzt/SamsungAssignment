@@ -11,6 +11,8 @@ on:
 env:
   DOTNET_VERSION: '8.x'
   PUBLISH_DIR: './publish'
+  # Define the path for the deployment zip
+  DEPLOYMENT_PACKAGE_PATH: './deploy-package.zip'
 
 jobs:
   build:
@@ -35,12 +37,19 @@ jobs:
 
       - name: Publish the app
         run: dotnet publish UserService/UserService.Presentation -c Release -o ${{ env.PUBLISH_DIR }} --no-build
-
-      - name: Upload publish directory as artifact
+        
+      # New step: Zip the published output for Run From Package deployment
+      - name: Create deployment package zip
+        run: |
+          cd ${{ env.PUBLISH_DIR }}
+          zip -r ../deploy-package.zip .
+          cd ..
+      
+      - name: Upload deployment package as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: published-app
-          path: ${{ env.PUBLISH_DIR }}
+          name: published-app-zip
+          path: ${{ env.DEPLOYMENT_PACKAGE_PATH }} # Upload the zip file
 
   deploy:
     runs-on: ubuntu-latest
@@ -50,11 +59,11 @@ jobs:
       contents: read
 
     steps:
-      - name: Download published app artifact
+      - name: Download deployment package artifact
         uses: actions/download-artifact@v4
         with:
-          name: published-app
-          path: ./deploy-dir
+          name: published-app-zip # Download the zip file
+          path: . # Download to the current directory
 
       - name: Azure Login via OIDC
         uses: azure/login@v2
@@ -68,4 +77,13 @@ jobs:
         with:
           app-name: 'UserServicePresentation20250718014607'
           slot-name: 'Production'
-          package: ./deploy-dir
+          package: ${{ env.DEPLOYMENT_PACKAGE_PATH }} # Point to the zip file
+          # Important: For WEBSITE_RUN_FROM_PACKAGE, ensure the app setting is configured in Azure Portal.
+          # You might also add a step to set it via Azure CLI if it's not already.
+          # Example (if you needed to set it in the workflow):
+          # - name: Set WEBSITE_RUN_FROM_PACKAGE app setting (if not already set)
+          #   run: |
+          #     az webapp config appsettings set --name 'UserServicePresentation20250718014607' \
+          #       --resource-group <YourResourceGroup> --settings WEBSITE_RUN_FROM_PACKAGE=1
+          #   # Replace <YourResourceGroup> with your actual resource group name.
+          #   # This step only needs to run once or if you want to ensure it's always set.
