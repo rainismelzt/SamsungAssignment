@@ -65,12 +65,18 @@ namespace UserService.Presentation.Controllers
             try
             {
                 T response = await serviceCall();
-
                 return Ok(response);
             }
             catch (Exception ex)
             {
-                return Problem(ex.Message);
+                // Return ProblemDetails object for proper error handling
+                var problemDetails = new ProblemDetails
+                {
+                    Status = 500,
+                    Title = "An error occurred while processing your request.",
+                    Detail = ex.Message
+                };
+                return StatusCode(500, problemDetails);
             }
         }
     }
