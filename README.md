@@ -20,6 +20,10 @@
 
 # Run the app
 
-5. Restore project dependencies by running **dotnet restore**
+8. Go to **UserService.Presentation** directory
 
-6. Run the application by running **dotnet run**
+9. Restore project dependencies by running **dotnet restore**
+
+10. Run the application by running **dotnet run**, and you should see:
+      _info: Microsoft.Hosting.Lifetime[14]
+            Now listening on: http://localhost:5221_
